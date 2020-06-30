@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+  traefik:
+    container_name: ribuild-traefik
+    restart: unless-stopped
+    image: traefik:1.7
+    command:
+      - "--entrypoints=Name:http Address::80"
+      - "--defaultentrypoints=http"
+      - "--docker.watch"
+      - "--docker"
+    ports:
+      - "8088:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  app:
+    container_name: ribuild-api
+    restart: unless-stopped
+    build: .
+    environment:
+      MYSQL_HOST: mysql
+      PHP_OPCACHE_VALIDATE_TIMESTAMPS: 1
+      MIGRATE_ON_STARTUP: 1
+      INSTALL_DEPENDENCIES: 1
+      DEV: 1
+    labels:
+      traefik.port: "80"
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html:delegated
+
+  wp5:
+    container_name: wp5
+    restart: unless-stopped
+    image: ocni/wp5:latest
+    ports:
+      - "8000:8000"
+
+
+  mysql:
+    container_name: ribuild-mysql
+    restart: unless-stopped
+    image: mysql:8.0
+    ports:
+      - "33067:3306"
+    volumes:
+      - ./docker/mysql:/var/lib/mysql:delegated
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: db

@@ -1,0 +1,17 @@
+<?php
+
+use App\Simulation;
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    /**
+     * Seed the application's database.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        factory(Simulation::class, 10_000)->create();
+    }
+}
